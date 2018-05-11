@@ -18,6 +18,8 @@ int main(int argc, char** argv) {
     }
 
     int fd_r = open(fifo_server, O_RDONLY, 0);
+    //! ref: unpv2 page 61
+    int dummy_fd_w = open(fifo_server, O_WRONLY, 0);
 
     if (fd_r < 0) {
         printf("Failed to open the server fifo: %s\n", fifo_server);
@@ -52,6 +54,7 @@ int main(int argc, char** argv) {
         }
 
         int fd_file = open(path, O_RDONLY, 0);
+        
         if (fd_file < 0) {
             snprintf(buf, MAXLINE, "%s: failed to open, %s\n", path, strerror(errno));
             write(fd_w, buf, strlen(buf));

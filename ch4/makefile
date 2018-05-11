@@ -10,6 +10,9 @@ OBJS=$(wildcard *.o)
 mainserver: mainserver.o fifoutils.o
 	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS)
 
+mainclient: mainclient.o fifoutils.o
+	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS)
+
 include $(OBJS:.o=.d)
 
 .PHONY: clean
