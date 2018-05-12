@@ -20,4 +20,4 @@ include $(OBJS:.o=.d)
 clean:
 	rm -f *.o
 	rm -f *.d
-	ls | grep -v ".[ch]" | grep -v "makefile" | xargs rm
+	ls | grep -v "[.][ch]" | grep -v "makefile" | xargs rm
