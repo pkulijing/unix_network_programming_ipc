@@ -1,4 +1,5 @@
-## Pipes
+## Pipes & FIFOs
+### Pipes
 * No name. Usable only by related processes
 * Accessed using `read` and `write` functions
 * Created by the `pipe` function
@@ -42,7 +43,7 @@
     - `pclose` closes the IO stream created by `popen`, waits for the command 
     to terminate and returns the termination status of the shell
 
-## FIFOs (First In First Out, or Named Pipes)
+### FIFOs (First In First Out, or Named Pipes)
 * One way flow of data, similar to a pipe
 * Has a pathname associated with it, allowing unrelated processes to acccess a single FIFO
 * Created by calling `mkfifo` function or shell command.
@@ -56,7 +57,7 @@
     - Musted be opened read-only or write only, NOT read-write
     - `write` to a pipe of fifo always appends the data, and a `read` always returns what is at the beginning
     - `lseek` cannot be called for pipe or FIFO (returning `ESPIPE`)
-## Additional Properties
+#### Additional Properties
 * The `O_NONBLOCK` flag can be specified with `open` (only for fifo) or `fcntl`
     ```c
     int flags;
