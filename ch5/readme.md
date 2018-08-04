@@ -1,5 +1,7 @@
-## Posix Message Queues
-### Introduction
+# Posix Message Queues
+
+## Introduction
+
 * A message queue can be thought of as a linked list of messages
 * Different from pipes and fifos
 
@@ -42,7 +44,9 @@
         </tr>
     </tbody>
     </table>
-### Programming Interface
+
+## Programming Interface
+
 ```c
 #include <mqueue.h>
 // Create a new message queue or open an existing one.
@@ -76,12 +80,14 @@ int mq_setattr(mqd_t mqdes, const struct mq_attr *attr, struct mq_attr *oattr);
 int mq_send(mqd_t mqdes, const char *ptr, size_t len, unsigned int prio);
 ssize_t mq_receive(mqd_t mqdes, char* ptr, size_t len, unsigned int *priop);
 ```
-### Message Queue Limits
+## Message Queue Limits
+
 There are two system-wide limits besides `mq_maxmsg` and `mq_msgsize`
 * `MQ_OPEN_MAX`: max number of message queues that a process can have open at once (at least 8 as per Posix)
 * `MQ_PRIO_MAX`: max value plus one for the priority of any message (at least 32 as per Posix)
 
-### `mq_notify` Function
+## `mq_notify` Function
+
 * Posix message queues allow for an asynchronous event notification when a message is placed onto an empty queue. It can be:
     - the generation of a signal
     - the creation of a thread to execute a specified function

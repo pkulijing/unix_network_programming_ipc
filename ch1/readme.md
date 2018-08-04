@@ -1,6 +1,11 @@
-## Introduction
+# Introduction
+
 IPC: InterProcess Communication
+
+## Introduction
+
 ### Evolution of Message Passing
+
 * Pipes
     - within the program or from the shell
     - problem: only between processes with common ancestor (fixed by named pipes / FIFOs)
@@ -10,7 +15,9 @@ IPC: InterProcess Communication
     - call a function on one system (server) from a program on another system (client)
     - alternative to explicit network programming
     - information passing & can be used on the same host => another form of message passing
+
 ### Evolution  of Synchronization
+
 * Early programs
     - often for preventing simultaneous modification of a file
     - used quirks of the filesystem
@@ -23,11 +30,14 @@ IPC: InterProcess Communication
 * Read-write locks
 
 ## Processes, Threads and the Sharing of Information
+
 * Traditional Unix programming model
     - multiple processes running on a system
     - each process has its own address space
     - processes share information in various ways
+
 ### Different ways to share information
+
 * Information in file
     - each process has to go through the kernel (e.g. read, write, lseek) for access
     - synchronization required when file is being updated: protect writes from each other, protect readers from a writer
@@ -39,6 +49,7 @@ IPC: InterProcess Communication
     - requires some form of synchronization
 
 ### Threads
+
 * From an IPC point of view
     - all threads within the same process share the same global variables (e.g. shared memory concept inherent to this model)
     - access to global data must be synchronized
@@ -85,6 +96,7 @@ IPC: InterProcess Communication
     ```
 
 ### Persistence of IPC Objects
+
 * Process persistent
     - exists until the last process holding IPC object open closes it
     - e.g. FIFO, pipe, TCP/UDP socket, Unix domain socket
