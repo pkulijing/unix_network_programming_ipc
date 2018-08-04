@@ -8,6 +8,9 @@ OBJS=$(wildcard *.o)
 prodcons2:prodcons2.o
 	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS) $(LINKFLAGS)
 
+prodcons6:prodcons6.o
+	$(CC) $(CFLAGS) -o $@ $^ $(CFLAGS) $(LINKFLAGS)
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 

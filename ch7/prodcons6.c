@@ -5,28 +5,48 @@
 #define MAX_ITEMS 1000000
 #define MAX_THREADS 64
 
-typedef struct shared_data_STRUCTDEF {
+typedef struct shared_data_put_STRUCTDEF {
     pthread_mutex_t mutex;
     int nput; // next position to put an item
     int nval; // next val to put
-} shared_data;
+} shared_data_put;
 
-shared_data shared = {
+typedef struct shared_data_ready_STRUCTDEF {
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+    int nready; // number of items ready for consumer to process
+} shared_data_ready;
+
+shared_data_put put = {
     PTHREAD_MUTEX_INITIALIZER
 };
 
-int nitems; // number of items 
+shared_data_ready ready = {
+    PTHREAD_MUTEX_INITIALIZER,
+    PTHREAD_COND_INITIALIZER
+};
+
 int buf[MAX_ITEMS];
+
+int nitems; // number of items 
 
 void *producer (void *arg) {
     while (1) {
-        pthread_mutex_lock(&shared.mutex);
-        if (shared.nput >= nitems) {
-            pthread_mutex_unlock(&shared.mutex);
+        pthread_mutex_lock(&put.mutex);
+        if (put.nput >= nitems) {
+            pthread_mutex_unlock(&put.mutex);
             break;
         }
-        buf[shared.nput++] = shared.nval++;
-        pthread_mutex_unlock(&shared.mutex);
+        buf[put.nput++] = put.nval++;
+        pthread_mutex_unlock(&put.mutex);
+
+        pthread_mutex_lock(&ready.mutex);
+        if (ready.nready == 0) {
+            pthread_cond_signal(&ready.cond);
+        }
+        ready.nready++;
+        pthread_mutex_unlock(&ready.mutex);
+        
         (*(int*)arg) += 1;
     }
     return NULL;
@@ -35,7 +55,13 @@ void *producer (void *arg) {
 void *consumer(void *arg) {
     int i;
     for (i = 0; i < nitems; ++i) {
-        ASSERT_ERR_SYS(i == buf[i], "buf[%d] = %d\n", i, buf[i]);
+        pthread_mutex_lock(&ready.mutex);
+        while (ready.nready == 0) {
+            pthread_cond_wait(&ready.cond, &ready.mutex);
+        }
+        ready.nready--;
+        pthread_mutex_unlock(&ready.mutex);
+        ASSERT_ERR_SYS(i == buf[i], "buf[%d] = %d", i, buf[i]);
     }
     printf("consumer finished!\n");
     return NULL;
@@ -62,6 +88,9 @@ int main(int argc, char** argv) {
             &producer, &count[i]), "Failed to create thread %d", i);
     }
 
+    ASSERT_ERR_QUIT(0 == pthread_create(&tid_consumer, NULL, &consumer, NULL),
+        "Failed to create consumer thread");
+
     for (i = 0; i < nthreads; ++i) {
         ASSERT_ERR_QUIT(0 == pthread_join(tid_producer[i], NULL), 
             "Failed to join thread %d(tid = %ld)", i, (long)(tid_producer[i]));
@@ -72,10 +101,8 @@ int main(int argc, char** argv) {
         printf("tid_producer[%d] = %ld, count[%d] = %d\n", i, (long)(tid_producer[i]), i, count[i]);
         sum += count[i];
     }
-    printf("sum = %d, nitems = %d\n", sum, nitems);
 
-    ASSERT_ERR_QUIT(0 == pthread_create(&tid_consumer, NULL, &consumer, NULL),
-        "Failed to create consumer thread");
+    printf("sum = %d, nitems = %d\n", sum, nitems);
 
     ASSERT_ERR_QUIT(0 == pthread_join(tid_consumer, NULL), "Failed to join "
         "consumer thread (tid = %ld)", (long)tid_consumer);
