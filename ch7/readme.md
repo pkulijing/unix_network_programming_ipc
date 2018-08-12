@@ -85,3 +85,40 @@
         // modify condition
         pthread_mutex_unlock(&var.mutex);
         ```
+
+* Timed Waits and Broadcasts
+
+    ```c
+    struct timespec {
+        time_t tv_sec;  // seconds
+        long   tv_nsec; // nanoseconds
+    };
+    #include <pthread.h>
+    int pthread_cond_broadcast(pthread_cond_t *cptr);
+    int pthread_cond_timedwait(pthread_cond_t *cptr, pthread_mutex_t *mptr, 
+        const struct timespec *abstime);
+    ```
+    * `pthread_cond_broadcast` wakes up all threads that are blocked on the condition variable
+    * `pthread_cond_timedwait` lets a thread place a limit on how long it will block. The function returns at the specified system time even if the condition variable has not been signaled yet
+  
+## Mutexex and Condition Variable Attributes
+
+* Initialization & Destruction
+    ```c
+    #include <pthread.h>
+    int pthread_mutex_init(pthread_mutex_t *mptr, const pthread_mutexattr_t *attr);
+    int pthread_mutex_destroy(pthread_mutex_t *mptr);
+    int pthread_cond_init(pthread_cond_t *cptr, const pthread_condattr_t *attr);
+    int pthread_cond_destroy(pthread_cond_t *cptr);
+    ```
+* `pthread_mutexattr_t` and `pthread_condattr_t` are initialized & destroyed in a similar manner (with `pthread_xxxx_init` and `pthread_xxxx_destroy` functions)
+* The attribute that specifies whether the mutex / condition variable is to be shared between different processes (not just between threads): `PTHREAD_PROCESS_PRIVATE` or `PTHREAD_PROCESS_SHARED`
+    * The mutex / condition variable must be stored in shared memory
+    * There is no way to have the system automatically release held locks upon process termination. Even if there were such a way, problem might still exist: corrupted shared data which is meant to be protected by the mutex / condition variable
+  
+    ```c
+    #include <pthread.h>
+    int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr, int *valptr);
+    int pthread_mutexattr_setpshared(pthread_mutexattr_t *attr, int value);
+    // condattr similar
+    ```
