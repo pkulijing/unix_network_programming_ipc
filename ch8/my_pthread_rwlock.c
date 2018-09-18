@@ -1,6 +1,19 @@
 #include <errno.h>
 #include "utils.h"
 #include "my_pthread_rwlock.h"
+static void my_rwlock_cancelrdwait(void *arg) {
+    my_pthread_rwlock_t *rw;
+    rw = arg;
+    rw->rw_nwaitreaders -= 1;
+    pthread_mutex_unlock(&rw->rw_mutex);
+}
+
+static void my_rwlock_cancelwrwait(void *arg) {
+    my_pthread_rwlock_t *rw;
+    rw = arg;
+    rw->rw_nwaitwriters -= 1;
+    pthread_mutex_unlock(&rw->rw_mutex);
+}
 int my_pthread_rwlock_init(my_pthread_rwlock_t* rwptr, my_pthread_rwlockattr_t* attr) {
     int result;
 
@@ -63,7 +76,9 @@ int my_pthread_rwlock_rdlock(my_pthread_rwlock_t *rw) {
 
     while (-1 == rw->rw_refcount || rw->rw_nwaitwriters > 0) {
         rw->rw_nwaitreaders += 1;
+        pthread_cleanup_push(&my_rwlock_cancelrdwait, rw);
         result = pthread_cond_wait(&rw->rw_condreaders, &rw->rw_mutex);
+        pthread_cleanup_pop(0);
         rw->rw_nwaitreaders -= 1;
         if (result != 0) {
             break;
@@ -114,7 +129,9 @@ int my_pthread_rwlock_wrlock(my_pthread_rwlock_t *rw) {
 
     while (rw->rw_refcount != 0) {
         rw->rw_nwaitwriters += 1;
+        pthread_cleanup_push(&my_rwlock_cancelwrwait, rw);
         result = pthread_cond_wait(&rw->rw_condwriters, &rw->rw_mutex);
+        pthread_cleanup_pop(0);
         rw->rw_nwaitwriters -= 1;
         if (result != 0) {
             break;

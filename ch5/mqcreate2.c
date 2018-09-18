@@ -1,4 +1,4 @@
-#include "mqutils.h"
+#include "utils.h"
 int main(int argc, char** argv) {
     int flags = O_RDWR | O_CREAT;
     int opt;

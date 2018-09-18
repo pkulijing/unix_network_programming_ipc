@@ -1,4 +1,4 @@
-#include "mqutils.h"
+#include "utils.h"
 int main(int argc, char** argv) {
     if (argc != 4) {
         err_quit("usage: mqsend <name> <priority> <content>\n");

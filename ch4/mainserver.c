@@ -9,7 +9,7 @@
 #include <errno.h> // errno
 #include <assert.h>
 
-#include "fifoutils.h"
+#include "utils.h"
 
 int main(int argc, char** argv) {
     if (mkfifo(fifo_server, FILE_MODE) < 0 && errno != EEXIST) {

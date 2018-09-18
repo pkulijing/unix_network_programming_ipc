@@ -1,18 +1,25 @@
 #ifndef UNPI_UTILS_H
 #define UNPI_UTILS_H
 
+#include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <fcntl.h> // mode_t
 #include <sys/stat.h> // S_IRUSR
+#include <mqueue.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <stdarg.h>
-
+#include <signal.h>
+extern const int MAXLINE;
 extern const mode_t FILE_MODE;
+extern const char fifo_server[];
+extern const char fifo_child_prefix[];
 
 void err_sys(const char* format, ...);
 void err_quit(const char* format, ...);
+void fillChildFifoName(char* buf, size_t maxlen, long pid);
 
 #define ASSERT_ERR_QUIT(pred, format, ...) \
     if (!(pred)) { \

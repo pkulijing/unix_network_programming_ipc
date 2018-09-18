@@ -10,7 +10,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include "fifoutils.h"
+#include "utils.h"
 
 int main(int argc, char** argv) {
 
@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     
     char request[MAXLINE], buf[MAXLINE];
     fgets(buf, MAXLINE, stdin);
-    snprintf(request, MAXLINE, "%ld %s", getpid(), buf);
+    snprintf(request, MAXLINE, "%d %s", getpid(), buf);
     
     int fd_w = open(fifo_server, O_WRONLY, 0);
     if (fd_w < 0) {

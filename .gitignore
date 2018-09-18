@@ -1,5 +1,2 @@
-*/*
-!*/*.c
-!*/*.h
-!*/makefile
-!*/*.md
+build
+.vscode

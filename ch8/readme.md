@@ -32,4 +32,16 @@ int pthread_rwlockattr_destroy(pthread_rwlockattr_t *attr);
 ```
 ## Thread Cancellation
 
+* If a thread calling our *my_pthread_rwlock_rdlock* is canceled when it is blocked in the call to *pthread_cont_wait*, it will terminate with the mutex held (the mutex is reacquired before calling the first cancellation cleanup handler when a thread is canceled while blocked in a condition variable wait), makeing the value of rw_nwaitreaders wrong.
+* solution: install/remove cleanup handlers.
 
+```c
+#include <pthread.h>
+void pthread_cleanup_push(void (*function)(void*), void *arg);
+// handler is called when execute != 0
+void pthread_cleanup_pop(int execute);
+```
+
+* The handlers are called when
+    * the thread is canceled (by some thread calling `pthread_cancel`)
+    * when the thread terminates voluntarily (by calling `pthread_exit` or returning from the thread start function) 
