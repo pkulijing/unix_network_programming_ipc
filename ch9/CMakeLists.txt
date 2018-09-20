@@ -1,0 +1,1 @@
+add_executable(locknone locknone.c lockmain.c)
