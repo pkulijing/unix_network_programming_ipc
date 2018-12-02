@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <signal.h>
+#include <stdint.h>
 extern const int MAXLINE;
 extern const mode_t FILE_MODE;
 extern const char fifo_server[];
@@ -20,6 +21,7 @@ extern const char fifo_child_prefix[];
 void err_sys(const char* format, ...);
 void err_quit(const char* format, ...);
 void fillChildFifoName(char* buf, size_t maxlen, long pid);
+const char* current_time();
 
 #define ASSERT_ERR_QUIT(pred, format, ...) \
     if (!(pred)) { \
