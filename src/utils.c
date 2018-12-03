@@ -21,11 +21,7 @@ void err_sys(const char* format, ...) {
 }
 
 void err_quit(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    va_end(args);
+    err_sys(format, ...);
     exit(-1);
 }
 
