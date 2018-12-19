@@ -92,3 +92,28 @@ int sem_post(sem_t *sem);
 int sem_getvalue(sem_t *sem, int *valp);
 ```
 
+## Producer-Consumer Problem Using Semaphores
+
+### Circular Buffer
+
+After the producer fills the finay entry `buff[NBUFF - 1]`, it goes back and fills the first entry `buff[0]`, and the consumer does the same. Conditions must be maintained:
+
+* Consumer cannot remove an item from the buffer when it's empty
+* Producer cannot place an item into the buffer when it's full
+* Buffer manipulations by producer and consumer must be protected to avoid race conditions
+
+### Solution Using Semaphore
+
+* A binary semaphore `mutex` to protect the critical regions (insertion & deletion). Could be replaced by a real mutex.
+* A counting semaphore `nempty` to count the number of empty slots. Initialized to `NBUFF`.
+* A counting semaphore `nstored` to count the number of filled slots. Initialzed to 0.
+
+## Posix Memory-Based Semaphore Functions
+
+``` c
+// shared = 0: shared between threads of a process; else: shared between processes (must be stored in shared memory)
+// UB if sem_init is called on a sem_t already initialized.
+// return -1 on error. DOES NOT return 0 on success!
+int sem_init(sem_t *sem, int shared, unsigned int value);
+int sem_destroy(sem_t * sem);
+```

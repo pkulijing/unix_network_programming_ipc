@@ -25,11 +25,13 @@ const char* current_time();
 
 #define ASSERT_ERR_QUIT(pred, format, ...) \
     if (!(pred)) { \
+        fprintf(stderr, "[%s:%d]", __FILE__, __LINE__); \
         err_quit(format, ##__VA_ARGS__); \
     }
 
 #define ASSERT_ERR_SYS(pred, format, ...) \
     if (!(pred)) { \
+        fprintf(stderr, "[%s:%d]", __FILE__, __LINE__); \
         err_sys(format, ##__VA_ARGS__); \
     }
 

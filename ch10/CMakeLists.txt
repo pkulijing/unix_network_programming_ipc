@@ -1,14 +1,14 @@
-add_executable(locknone locknone.c lockmain.c)
-add_executable(lockwholefile lockfcntl.c lockmain.c)
-add_executable(locktest1
-  locktest1.c
-  lock_reg.c
+add_executable(prodcons1
+  prodcons1.c
 )
-add_executable(locktest2
-  locktest2.c
-  lock_reg.c
+target_link_libraries(prodcons1 pthread)
+
+add_executable(prodcons3
+  prodcons3.c
 )
-add_executable(onedaemon
-  onedaemon.c
-  lock_reg.c
+target_link_libraries(prodcons3 pthread)
+
+add_executable(prodcons4
+  prodcons4.c
 )
+target_link_libraries(prodcons4 pthread)
