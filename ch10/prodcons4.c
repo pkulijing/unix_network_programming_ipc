@@ -57,12 +57,22 @@ int main(int argc, char** argv) {
     total_p += count_p[i];
     printf("count_p[%d] = %d\n", i, count_p[i]);
   }
+  ASSERT_ERR_QUIT(sem_post(&shared.nstored) == 0, "Failed to post to nstored");
   for (i = 0; i < nconsumers; ++i) {
     ASSERT_ERR_QUIT(pthread_join(tid_consumer[i], NULL) == 0, 
       "Failed to join consumer thread: %ld", tid_consumer[i]);
     total_c += count_c[i];
     printf("count_c[%d] = %d\n", i, count_c[i]);
   }
+  ASSERT_ERR_QUIT(sem_wait(&shared.nstored) == 0, "Failed to wait for nstored");
+
+  int val_empty = 0, val_stored = 0, val_mutex = 0;
+  ASSERT_ERR_SYS(sem_getvalue(&shared.nstored, &val_stored) == 0, "Failed to get value of nstored");
+  ASSERT_ERR_SYS(sem_getvalue(&shared.nempty, &val_empty) == 0, "Failed to get value of nempty");
+  ASSERT_ERR_SYS(sem_getvalue(&shared.mutex, &val_mutex) == 0, "Failed to get value of stored");
+
+  ASSERT_ERR_SYS(val_empty == NBUFF && val_stored == 0 && val_mutex == 1, 
+    "logic error: empty = %d, stored = %d, mutex = %d", val_empty, val_stored, val_mutex);
 
   ASSERT_ERR_QUIT(0 == sem_destroy(&shared.mutex), "Failed to destroy semaphore mutex");
   ASSERT_ERR_QUIT(0 == sem_destroy(&shared.nempty), "Failed to destroy semaphore nempty");
@@ -91,7 +101,7 @@ void * producer(void * arg) {
       ASSERT_ERR_QUIT(sem_post(&shared.nstored) == 0, "Failed to post to nstored");
     } else {
       nextval = shared.nputval;
-      ASSERT_ERR_QUIT(sem_post(&shared.nstored) == 0, "Failed to post to nstored");      
+      // ASSERT_ERR_QUIT(sem_post(&shared.nstored) == 0, "Failed to post to nstored");      
       ASSERT_ERR_QUIT(sem_post(&shared.nempty) == 0, "Failed to post to nempty");
       ASSERT_ERR_QUIT(sem_post(&shared.mutex) == 0, "Failed to post to mutex");
     }

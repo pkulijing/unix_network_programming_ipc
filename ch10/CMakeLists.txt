@@ -12,3 +12,7 @@ add_executable(prodcons4
   prodcons4.c
 )
 target_link_libraries(prodcons4 pthread)
+
+add_library(sem_impl_fifo SHARED
+  sem_impl_fifo.c
+)

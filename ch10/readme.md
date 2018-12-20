@@ -108,6 +108,18 @@ After the producer fills the finay entry `buff[NBUFF - 1]`, it goes back and fil
 * A counting semaphore `nempty` to count the number of empty slots. Initialized to `NBUFF`.
 * A counting semaphore `nstored` to count the number of filled slots. Initialzed to 0.
 
+### Multiple Buffers
+
+Application of the model: double buffering to accelerate text processing programs of the form:
+
+``` c
+while ((n = read(fdin, buff, BUFFSIZE)) > 0) {
+  /* process buffer data */
+  write(fdout, buff, n);
+}
+```
+Using two threads respectively for reading and writing does not accelerate the program: the writing thread has to wait util the reading thread finishes filling the buffer. Yet adding a second buffer can make it run as fast as possible: the reading thread just switches to the 2nd buffer when the writing thread is processing the 1st buffer.
+
 ## Posix Memory-Based Semaphore Functions
 
 ``` c
@@ -117,3 +129,8 @@ After the producer fills the finay entry `buff[NBUFF - 1]`, it goes back and fil
 int sem_init(sem_t *sem, int shared, unsigned int value);
 int sem_destroy(sem_t * sem);
 ```
+
+## Sharing Semaphores between Processes
+
+* memory-based semaphores: resides in shared memories; 2nd arg of `sem_init` must be 1
+* named semaphores: different processes can always reference the same semaphore with the same name. Special case with `fork`: semaphores open in the parent process is also open in the child process

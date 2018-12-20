@@ -56,7 +56,7 @@
     int mkfifo(const char *pathname, mode_t mode);
     ```
     - `mkfifo` implies `O_CREAT | O_EXCL`: create and returns `EEXIST` if the FIFO already exists
-    - Must be opened for reading or reading using `open` or standard IO open functions, e.g. `fopen`
+    - Must be opened for reading or writing using `open` or standard IO open functions, e.g. `fopen`
     - Musted be opened read-only or write only, NOT read-write
     - `write` to a pipe of fifo always appends the data, and a `read` always returns what is at the beginning
     - `lseek` cannot be called for pipe or FIFO (returning `ESPIPE`)
