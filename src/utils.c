@@ -41,6 +41,6 @@ const char* current_time() {
   ptr[strlen(ptr) - 6] = '\0'; // 2018\n\0
 
   strncpy(buffer, ptr, strlen(ptr));
-  snprintf(buffer + strlen(ptr), sizeof(buffer) - strlen(ptr), ".%06ld", (int64_t)tv.tv_usec);
+  snprintf(buffer + strlen(ptr), sizeof(buffer) - strlen(ptr), ".%06ld", (long)tv.tv_usec);
   return buffer;
 }

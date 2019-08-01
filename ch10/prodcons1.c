@@ -59,6 +59,7 @@ void * producer(void * arg) {
   for (i = 0; i < nitems; ++i) {
     ASSERT_ERR_QUIT(sem_wait(shared.nempty) == 0, "Failed to wait for nempty");
     ASSERT_ERR_QUIT(sem_wait(shared.mutex) == 0, "Failed to wait for mutex");
+    printf("inserting %d at %d\n", i, i % NBUFF);
     shared.buff[i % NBUFF] = i;
     ASSERT_ERR_QUIT(sem_post(shared.mutex) == 0, "Failed to post to mutex");
     ASSERT_ERR_QUIT(sem_post(shared.nstored) == 0, "Failed to post to nstored");
@@ -72,6 +73,7 @@ void * consumer(void * arg) {
   for (i = 0; i < nitems; ++i) {
     ASSERT_ERR_QUIT(sem_wait(shared.nstored) == 0, "Failed to wait for nstored");
     ASSERT_ERR_QUIT(sem_wait(shared.mutex) == 0, "Failed to wait for mutex");
+    printf("consuming %d at %d\n", i, i % NBUFF);
     ASSERT_ERR_SYS(shared.buff[i % NBUFF] == i, "buff[%d] = %d, should be %d",
       i % NBUFF, shared.buff[i % NBUFF], i);
     ASSERT_ERR_QUIT(sem_post(shared.mutex) == 0, "Failed to post to mutex");

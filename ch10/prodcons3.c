@@ -8,6 +8,9 @@ void *consumer(void *);
 
 #define NBUFF 10
 #define MAXTHREADS 100
+#define SEM_MUTEX "/sem_mutex"
+#define SEM_NEMPTY "/sem_nempty"
+#define SEM_NSTORED "/sem_nstored"
 
 int nitems;
 int nproducers;
@@ -16,7 +19,7 @@ struct {
   int buff[NBUFF];
   int nput;
   int nputval;
-  sem_t mutex, nempty, nstored;
+  sem_t *mutex, *nempty, *nstored;
 } shared;
 
 int main(int argc, char** argv) {
@@ -28,9 +31,13 @@ int main(int argc, char** argv) {
   nitems = atoi(argv[1]);
   nproducers = atoi(argv[2]);
 
-  ASSERT_ERR_QUIT(sem_init(&shared.mutex, 0, 1) != -1, "Failed to init mutex: %d", errno);
-  ASSERT_ERR_QUIT(sem_init(&shared.nempty, 0, NBUFF) != -1, "Failed to init nempty: %d", errno);
-  ASSERT_ERR_QUIT(sem_init(&shared.nstored, 0, 0) != -1, "Failed to init nstored: %d", errno);
+  shared.mutex = sem_open(SEM_MUTEX, O_CREAT | O_EXCL, FILE_MODE, 1);
+  shared.nempty = sem_open(SEM_NEMPTY, O_CREAT | O_EXCL, FILE_MODE, NBUFF);
+  shared.nstored = sem_open(SEM_NSTORED, O_CREAT | O_EXCL, FILE_MODE, 0);
+
+  ASSERT_ERR_QUIT(shared.mutex != SEM_FAILED, "Failed to create semaphore mutex: %d", errno);
+  ASSERT_ERR_QUIT(shared.nempty != SEM_FAILED, "Failed to create semaphore nempty: %d", errno);
+  ASSERT_ERR_QUIT(shared.nstored != SEM_FAILED, "Failed to create semaphore nstored: %d", errno);
 
   shared.nput = 0;
   shared.nputval = 0;
@@ -54,9 +61,9 @@ int main(int argc, char** argv) {
   ASSERT_ERR_QUIT(pthread_join(tid_consumer, NULL) == 0, 
     "Failed to join consumer thread: %ld", tid_consumer);
 
-  ASSERT_ERR_QUIT(0 == sem_destroy(&shared.mutex), "Failed to destroy semaphore mutex");
-  ASSERT_ERR_QUIT(0 == sem_destroy(&shared.nempty), "Failed to destroy semaphore nempty");
-  ASSERT_ERR_QUIT(0 == sem_destroy(&shared.nstored), "Failed to destroy semaphore nstored");
+  ASSERT_ERR_QUIT(0 == sem_unlink(SEM_MUTEX), "Failed to unlink semaphore mutex");
+  ASSERT_ERR_QUIT(0 == sem_unlink(SEM_NEMPTY), "Failed to unlink semaphore nempty");
+  ASSERT_ERR_QUIT(0 == sem_unlink(SEM_NSTORED), "Failed to unlink semaphore nstored");
 
   ASSERT_ERR_QUIT(total == nitems, "total = %d, nitems = %d", total, nitems);
 
@@ -69,37 +76,38 @@ void * producer(void * arg) {
   *(int*)arg = 0;
   
   while (nextval < nitems) {
-    ASSERT_ERR_QUIT(sem_wait(&shared.nempty) == 0, "Failed to wait for nempty");
-    ASSERT_ERR_QUIT(sem_wait(&shared.mutex) == 0, "Failed to wait for mutex");
+    ASSERT_ERR_QUIT(sem_wait(shared.nempty) == 0, "Failed to wait for nempty");
+    ASSERT_ERR_QUIT(sem_wait(shared.mutex) == 0, "Failed to wait for mutex");
     if (shared.nputval < nitems) {
       shared.buff[shared.nput++] = shared.nputval++;
       shared.nput %= NBUFF;
       *(int*)arg += 1;
       nextval = shared.nputval;
-      ASSERT_ERR_QUIT(sem_post(&shared.mutex) == 0, "Failed to post to mutex");
-      ASSERT_ERR_QUIT(sem_post(&shared.nstored) == 0, "Failed to post to nstored");
+      ASSERT_ERR_QUIT(sem_post(shared.mutex) == 0, "Failed to post to mutex");
+      ASSERT_ERR_QUIT(sem_post(shared.nstored) == 0, "Failed to post to nstored");
     } else {
       nextval = shared.nputval;
-      ASSERT_ERR_QUIT(sem_post(&shared.nempty) == 0, "Failed to post to nempty");
-      ASSERT_ERR_QUIT(sem_post(&shared.mutex) == 0, "Failed to post to mutex");
+      // some other producer ought to have been awaken by the semaphore
+      ASSERT_ERR_QUIT(sem_post(shared.nempty) == 0, "Failed to post to nempty");
+      ASSERT_ERR_QUIT(sem_post(shared.mutex) == 0, "Failed to post to mutex");
     }
   }
-  printf("producer exit: %ld\n", pthread_self());
+  printf("producer exit: %ld\n", (long)pthread_self());
   return NULL;
 }
 
 void * consumer(void * arg) {
   int i;
   for (i = 0; i < nitems; ++i) {
-    ASSERT_ERR_QUIT(sem_wait(&shared.nstored) == 0, "Failed to wait for nstored");
-    ASSERT_ERR_QUIT(sem_wait(&shared.mutex) == 0, "Failed to wait for mutex");
+    ASSERT_ERR_QUIT(sem_wait(shared.nstored) == 0, "Failed to wait for nstored");
+    ASSERT_ERR_QUIT(sem_wait(shared.mutex) == 0, "Failed to wait for mutex");
     ASSERT_ERR_SYS(shared.buff[i % NBUFF] == i, "buff[%d] = %d, should be %d",
       i % NBUFF, shared.buff[i % NBUFF], i);
-    ASSERT_ERR_QUIT(sem_post(&shared.mutex) == 0, "Failed to post to mutex");
-    ASSERT_ERR_QUIT(sem_post(&shared.nempty) == 0, "Failed to post to nempty");
+    ASSERT_ERR_QUIT(sem_post(shared.mutex) == 0, "Failed to post to mutex");
+    ASSERT_ERR_QUIT(sem_post(shared.nempty) == 0, "Failed to post to nempty");
   }
 
-  printf("consumer exit: %ld\n", pthread_self());
+  printf("consumer exit: %ld\n", (long)pthread_self());
   return NULL;
 }
 

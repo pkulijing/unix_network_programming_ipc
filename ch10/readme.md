@@ -14,14 +14,13 @@ Operations that a process can perform on a semaphore:
 * *wait* for a semaphore (P operation): tests the value of the semaphore, waits (blocks) if its value is <= 0, and decrements its value once it's > 0.
 
   ```c
-  while (semaphore_value <= 0) {
-    /* wait (block the thread of process) */
-  }
+  /* pseudocode */
+  while (semaphore_value <= 0); /* wait (block the thread of process) */
   semaphore_value--;
   /* now we have the semaphore */
   ```
 
-  The value test in the while loop and the decrement must be ab *atomic* operation.
+  The value test in the while loop and the decrement must be an *atomic* operation.
 
 * *Post* to a semaphore (V operation).  
 
@@ -108,6 +107,10 @@ After the producer fills the finay entry `buff[NBUFF - 1]`, it goes back and fil
 * A counting semaphore `nempty` to count the number of empty slots. Initialized to `NBUFF`.
 * A counting semaphore `nstored` to count the number of filled slots. Initialzed to 0.
 
+Single-producer, single-consumer implementation: [prodcons1.c](prodcons1.c).
+Multiple-producers, single-consumer implementation: [prodcons3.c](prodcons3.c).
+Multiple-producers, multiple-consumers implementation: [prodcons4.c](prodcons4.c).
+
 ### Multiple Buffers
 
 Application of the model: double buffering to accelerate text processing programs of the form:
@@ -134,3 +137,8 @@ int sem_destroy(sem_t * sem);
 
 * memory-based semaphores: resides in shared memories; 2nd arg of `sem_init` must be 1
 * named semaphores: different processes can always reference the same semaphore with the same name. Special case with `fork`: semaphores open in the parent process is also open in the child process
+
+## Implementation Using FIFO
+
+[sem_impl_fifo.h](sem_impl_fifo.h)
+[sem_impl_fifo.c](sem_impl_fifo.c)

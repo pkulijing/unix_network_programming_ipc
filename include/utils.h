@@ -6,7 +6,9 @@
 #include <sys/types.h>
 #include <fcntl.h> // mode_t
 #include <sys/stat.h> // S_IRUSR
+#if __linux__
 #include <mqueue.h>
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
